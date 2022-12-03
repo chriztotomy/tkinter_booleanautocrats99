@@ -14,8 +14,8 @@ frame.place(relx=0.50, rely=0.50, relwidth=0.98, relheight=0.45, anchor = "n")
 mysql = sqlite3.connect("passmanager.db")
 cursor = mysql.cursor()
 
-cursor.execute(""" CREATE TABLE IF NOT EXISTS paswd (
-                       app_name text,
+cursor.execute(""" CREATE TABLE IF NOT EXISTS pas (
+                       url text,
                         email_id text,
                         password text
                         )
@@ -33,7 +33,7 @@ def submit():
 
     #Insert Into Table
     if url.get()!="" and email_id.get()!="" and password.get()!="":
-        cursor.execute("INSERT INTO paswd VALUES (:url, :email_id, :password)",
+        cursor.execute("INSERT INTO pas VALUES (:url, :email_id, :password)",
             {
                 'url': url.get(),
                 'email_id': email_id.get(),
@@ -64,7 +64,7 @@ def query():
     cursor = mysql.cursor()
 
     #Query the database
-    cursor.execute("SELECT *, oid FROM paswd")
+    cursor.execute("SELECT *, oid FROM pas")
     records = cursor.fetchall()
     #print(records)
 
@@ -80,6 +80,10 @@ def query():
     # Close connection
     mysql.close()
 
+def hide():
+    query_label['text'] = ""
+    query_btn.configure(text="Show Records", command=query)
+
 def delete():
     # connect to database
     conn = sqlite3.connect("passmanager.db")
@@ -88,7 +92,7 @@ def delete():
     #Query the database
     t = delete_id.get()
     if(t!=""):
-        cursor.execute("DELETE FROM manager where oid = " + delete_id.get())
+        cursor.execute("DELETE FROM pas where oid = " + delete_id.get())
         delete_id.delete(0, END)
         messagebox.showinfo("Alert", "Record %s Deleted" %t)
     else:
@@ -111,11 +115,9 @@ def update():
         edit.maxsize(450, 300)
 
         #Global variables
-        global app_name_edit, url_edit, email_id_edit, password_edit
+        global url_edit, email_id_edit, password_edit
 
         # Create Text Boxes
-        app_name_edit = Entry(edit, width=30)
-        app_name_edit.grid(row=0, column=1, padx=20)
         url_edit = Entry(edit, width=30)
         url_edit.grid(row=1, column=1, padx=20)
         email_id_edit = Entry(edit, width=30)
@@ -124,8 +126,6 @@ def update():
         password_edit.grid(row=3, column=1, padx=20)
 
         # Create Text Box Labels
-        app_name_label_edit = Label(edit, text="Application Name:")
-        app_name_label_edit.grid(row=0, column=0)
         url_label_edit = Label(edit, text="URL:")
         url_label_edit.grid(row=1, column=0)
         email_id_label_edit = Label(edit, text="Email Id:")
@@ -141,28 +141,61 @@ def update():
         submit_btn_edit.grid(row=4, column=0, columnspan=2, pady=5, padx=15, ipadx=135)
 
         # connect to database
-        conn = sqlite3.connect("passmanager.db")
-        cursor = conn.cursor()
+        mysql = sqlite3.connect("passmanager.db")
+        cursor = mysql.cursor()
 
         # Query the database
-        cursor.execute("SELECT * FROM manager where oid = " + update_id.get())
+        cursor.execute("SELECT * FROM pas where oid = " + update_id.get())
         records = cursor.fetchall()
 
         for record in records:
-            app_name_edit.insert(0, record[0])
-            url_edit.insert(0, record[1])
-            email_id_edit.insert(0, record[2])
-            password_edit.insert(0, record[3])
+            url_edit.insert(0, record[0])
+            email_id_edit.insert(0, record[1])
+            password_edit.insert(0, record[2])
 
         # Commit changes
-        conn.commit()
+        mysql.commit()
 
         # Close connection
-        conn.close()
+        mysql.close()
 
     else:
         messagebox.showinfo("Alert", "Please enter record id to update!")
 
+def change():
+    #connect to database
+    mysql = sqlite3.connect("passmanager.db")
+    cursor = mysql.cursor()
+
+    #Insert Into Table
+    if url_edit.get()!="" and email_id_edit.get()!="" and password_edit.get()!="":
+        cursor.execute("""UPDATE pas SET 
+                url = :url,
+                email_id = :email_id,
+                password = :password
+                
+                WHERE oid = :oid""",
+                       {
+                           'url': url_edit.get(),
+                           'email_id': email_id_edit.get(),
+                           'password': password_edit.get(),
+                           'oid': update_id.get()
+                       }
+        )
+        # Commit changes
+        mysql.commit()
+        # Close connection
+        mysql.close()
+        # Message box
+        messagebox.showinfo("Info", "Record Updated in Database!")
+
+        # After data entry clear the text box and destroy the secondary window
+        update_id.delete(0, END)
+        edit.destroy()
+
+    else:
+        messagebox.showinfo("Alert", "Please fill all details!")
+        mysql.close()
 
 url = Entry(root, width=30)
 url.grid(row=1, column=1, padx=20)
@@ -192,15 +225,15 @@ submit_btn = Button(root, text = "Add Record", command = submit)
 submit_btn.grid(row = 5, column=0, pady=5, padx=15, ipadx=35)
 
 
-query_btn = Button(root, text = "Show Records")
+query_btn = Button(root, text = "Show Records", command = query)
 query_btn.grid(row=5, column=1, pady=5, padx=5, ipadx=35)
 
 
-delete_btn = Button(root, text = "Delete Record")
+delete_btn = Button(root, text = "Delete Record", command = delete)
 delete_btn.grid(row=6, column=0, ipadx=30)
 
 
-update_btn = Button(root, text = "Update Record")
+update_btn = Button(root, text = "Update Record", command=update)
 update_btn.grid(row=7, column=0, ipadx=30)
 
 
@@ -215,3 +248,4 @@ if __name__ == '__main__':
     main()
 
 #root.mainloop()
+
