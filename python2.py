@@ -161,6 +161,8 @@ def update():
 
     else:
         messagebox.showinfo("Alert", "Please enter record id to update!")
+def paswd_gen():
+    import paswdGenerator
 
 def change():
     #connect to database
@@ -236,6 +238,8 @@ delete_btn.grid(row=6, column=0, ipadx=30)
 update_btn = Button(root, text = "Update Record", command=update)
 update_btn.grid(row=7, column=0, ipadx=30)
 
+gen_btn = Button(root, text = "Password Generation",command=paswd_gen)
+gen_btn.grid(row = 3, column=3, pady=5, padx=15, ipadx=35)
 
 global query_label
 query_label = Label(frame, anchor="nw", justify="left")
