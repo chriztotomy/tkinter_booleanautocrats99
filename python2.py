@@ -217,8 +217,6 @@ email_id_label = Label(root, text = "Email Id:")
 email_id_label.grid(row=2, column=0)
 password_label = Label(root, text = "Password:")
 password_label.grid(row=3, column=0)
-submit_btn = Button(root, text = "Generate")
-submit_btn.grid(row = 3, column=3, pady=5, padx=15, ipadx=35)
 #delete_label = Label(root, text = "Delete Record#:")
 #delete_label.grid(row=6, column=1)
 
